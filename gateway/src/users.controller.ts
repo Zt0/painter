@@ -8,7 +8,7 @@ import {
   Inject,
   HttpStatus,
   HttpException,
-  Param,
+  Param, UseGuards,
 } from '@nestjs/common';
 import { firstValueFrom } from 'rxjs';
 import { ClientProxy } from '@nestjs/microservices';
@@ -31,33 +31,36 @@ import { LoginUserResponseDto } from './interfaces/user/dto/login-user-response.
 import { LogoutUserResponseDto } from './interfaces/user/dto/logout-user-response.dto';
 import { ConfirmUserDto } from './interfaces/user/dto/confirm-user.dto';
 import { ConfirmUserResponseDto } from './interfaces/user/dto/confirm-user-response.dto';
+import { Role } from './services/guards/authorization.guard';
+import { LocalAuthGuard } from './services/guards/permission.guard';
+import { RolesGuard } from './services/guards/role.guard';
 
 @Controller('users')
 @ApiTags('users')
 export class UsersController {
   constructor(
-    @Inject('TOKEN_SERVICE') private readonly tokenServiceClient: ClientProxy,
     @Inject('USER_SERVICE') private readonly userServiceClient: ClientProxy,
   ) {}
 
-  @Get()
-  @Authorization(true)
-  @ApiOkResponse({
-    type: GetUserByTokenResponseDto,
-  })
+  @Get('/:id')
+  // @Authorization(true)
+  // @ApiOkResponse({
+  //   type: GetUserByTokenResponseDto,
+  // })
   public async getUserByToken(
+    @Param('id') id: string,
     @Req() request: IAuthorizedRequest,
-  ): Promise<GetUserByTokenResponseDto> {
+  ): Promise<unknown> {
     const userInfo = request.user;
-
+    console.log(id, 33)
     const userResponse: IServiceUserGetByIdResponse = await firstValueFrom(
-      this.userServiceClient.send('user_get_by_id', userInfo.id),
+      this.userServiceClient.send('user_get_by_id', id),
     );
-
+    console.log({ userResponse });
     return {
-      message: userResponse.message,
+      message: 'userResponse.message',
       data: {
-        user: userResponse.user,
+        user: userResponse,
       },
       errors: null,
     };
@@ -67,12 +70,14 @@ export class UsersController {
   @ApiCreatedResponse({
     type: CreateUserResponseDto,
   })
-  public async createUser(
+  public async register(
     @Body() userRequest: CreateUserDto,
   ): Promise<CreateUserResponseDto> {
+    console.log('post user')
     const createUserResponse: IServiceUserCreateResponse = await firstValueFrom(
-      this.userServiceClient.send('user_create', userRequest),
+      this.userServiceClient.send('register', userRequest),
     );
+    console.log(353)
     if (createUserResponse.status !== HttpStatus.CREATED) {
       throw new HttpException(
         {
@@ -84,54 +89,59 @@ export class UsersController {
       );
     }
 
-    const createTokenResponse: IServiveTokenCreateResponse = await firstValueFrom(
-      this.tokenServiceClient.send('token_create', {
-        userId: createUserResponse.user.id,
-      }),
-    );
-
     return {
       message: createUserResponse.message,
       data: {
         user: createUserResponse.user,
-        token: createTokenResponse.token,
+        token: '',
       },
       errors: null,
     };
   }
 
   @Post('/login')
+  // @UseGuards(LocalAuthGuard)
   @ApiCreatedResponse({
     type: LoginUserResponseDto,
   })
   public async loginUser(
     @Body() loginRequest: LoginUserDto,
-  ): Promise<LoginUserResponseDto> {
-    const getUserResponse: IServiceUserSearchResponse = await firstValueFrom(
-      this.userServiceClient.send('user_search_by_credentials', loginRequest),
+  ): Promise<unknown> {
+    console.log(3)
+    const getUserResponse: unknown & {user: {accessToken: string, refreshToken: string}} = await firstValueFrom(
+      this.userServiceClient.send('login', loginRequest),
     );
+    console.log(4)
+    return {
+      message: 'createTokenResponse.message',
+      data: {
+        accessToken: getUserResponse.user.accessToken,
+        refreshToken: getUserResponse.user.refreshToken,
+      },
+      errors: null,
+    };
+  }
 
-    if (getUserResponse.status !== HttpStatus.OK) {
-      throw new HttpException(
-        {
-          message: getUserResponse.message,
-          data: null,
-          errors: null,
-        },
-        HttpStatus.UNAUTHORIZED,
-      );
-    }
-
-    const createTokenResponse: IServiveTokenCreateResponse = await firstValueFrom(
-      this.tokenServiceClient.send('token_create', {
-        userId: getUserResponse.user.id,
-      }),
+  @Post('user')
+  @Role('')
+  @UseGuards(RolesGuard)
+  @ApiCreatedResponse({
+    type: CreateUserResponseDto,
+  })
+  public async createUser(
+    @Req() {uuid}: Request & {uuid: string},
+    @Body() userRequest: CreateUserDto,
+  ): Promise<unknown> {
+    console.log('create user', userRequest, uuid)
+    const createUserResponse: IServiceUserCreateResponse = await firstValueFrom(
+      this.userServiceClient.send('create_user', { userRequest, uuid }),
     );
+    console.log(353)
 
     return {
-      message: createTokenResponse.message,
+      message: 'createUserResponse.message',
       data: {
-        token: createTokenResponse.token,
+        user: null,
       },
       errors: null,
     };
@@ -147,25 +157,8 @@ export class UsersController {
   ): Promise<LogoutUserResponseDto> {
     const userInfo = request.user;
 
-    const destroyTokenResponse: IServiceTokenDestroyResponse = await firstValueFrom(
-      this.tokenServiceClient.send('token_destroy', {
-        userId: userInfo.id,
-      }),
-    );
-
-    if (destroyTokenResponse.status !== HttpStatus.OK) {
-      throw new HttpException(
-        {
-          message: destroyTokenResponse.message,
-          data: null,
-          errors: destroyTokenResponse.errors,
-        },
-        destroyTokenResponse.status,
-      );
-    }
-
     return {
-      message: destroyTokenResponse.message,
+      message: '',
       errors: null,
       data: null,
     };

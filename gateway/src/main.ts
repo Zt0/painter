@@ -13,6 +13,7 @@ async function bootstrap() {
     .build();
   const document = SwaggerModule.createDocument(app, options);
   SwaggerModule.setup('api', app, document);
-  await app.listen(new ConfigService().get('port'));
+    console.log(new ConfigService())
+  await app.listen(new ConfigService().get('api_gateway_port'));
 }
 bootstrap();

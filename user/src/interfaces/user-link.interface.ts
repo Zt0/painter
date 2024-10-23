@@ -1,6 +1,5 @@
-import { Document } from 'mongoose';
 
-export interface IUserLink extends Document {
+export interface IUserLink {
   id?: string;
   user_id: string;
   link: string;

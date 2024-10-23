@@ -5,10 +5,10 @@ export class CreateUserDto {
     uniqueItems: true,
     example: 'test1@denrox.com',
   })
-  email: string;
+  firstName: string;
   @ApiProperty({
     minLength: 6,
     example: 'test11',
   })
-  password: string;
+  lastName: string;
 }

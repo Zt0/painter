@@ -9,7 +9,7 @@ import {
   Body,
   Req,
   HttpException,
-  HttpStatus,
+  HttpStatus, UseGuards,
 } from '@nestjs/common';
 import { firstValueFrom } from 'rxjs';
 import { ClientProxy } from '@nestjs/microservices';
@@ -27,9 +27,11 @@ import { GetTasksResponseDto } from './interfaces/task/dto/get-tasks-response.dt
 import { CreateTaskResponseDto } from './interfaces/task/dto/create-task-response.dto';
 import { DeleteTaskResponseDto } from './interfaces/task/dto/delete-task-response.dto';
 import { UpdateTaskResponseDto } from './interfaces/task/dto/update-task-response.dto';
-import { CreateTaskDto } from './interfaces/task/dto/create-task.dto';
+import { CreatePostDto } from './interfaces/task/dto/create-post.dto';
 import { UpdateTaskDto } from './interfaces/task/dto/update-task.dto';
 import { TaskIdDto } from './interfaces/task/dto/task-id.dto';
+import { RolesGuard } from './services/guards/role.guard';
+import { Role } from './services/guards/authorization.guard';
 
 @Controller('tasks')
 @ApiTags('tasks')
@@ -65,21 +67,23 @@ export class TasksController {
 
   @Post()
   @Authorization(true)
-  @Permission('task_create')
+  @Role('')
+  @UseGuards(RolesGuard)
   @ApiCreatedResponse({
     type: CreateTaskResponseDto,
   })
   public async createTask(
-    @Req() request: IAuthorizedRequest,
-    @Body() taskRequest: CreateTaskDto,
+    @Req() {uuid}: Request & {uuid: string},
+    @Body() taskRequest: CreatePostDto,
   ): Promise<CreateTaskResponseDto> {
-    const userInfo = request.user;
+    console.log(34343)
     const createTaskResponse: IServiceTaskCreateResponse = await firstValueFrom(
       this.taskServiceClient.send(
         'task_create',
-        Object.assign(taskRequest, { user_id: userInfo.id }),
+        Object.assign(taskRequest, {uuid}),
       ),
     );
+    console.log("end")
 
     if (createTaskResponse.status !== HttpStatus.CREATED) {
       throw new HttpException(

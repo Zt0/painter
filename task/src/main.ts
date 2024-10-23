@@ -9,9 +9,9 @@ async function bootstrap() {
     transport: Transport.TCP,
     options: {
       host: '0.0.0.0',
-      port: new ConfigService().get('port'),
+      port: 7002,
     },
   } as TcpOptions);
-  await app.listenAsync();
+  await app.listen();
 }
 bootstrap();

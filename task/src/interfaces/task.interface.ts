@@ -1,6 +1,5 @@
-import { Document } from 'mongoose';
 
-export interface ITask extends Document {
+export interface ITask {
   name: string;
   description: string;
   user_id: string;

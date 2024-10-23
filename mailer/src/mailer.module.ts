@@ -1,13 +1,23 @@
 import { Module } from '@nestjs/common';
-import { MailerModule } from '@nest-modules/mailer';
+import { MailerModule } from '@nestjs-modules/mailer';
 import { MailerController } from './mailer.controller';
-import { MailerConfigService } from './services/config/mailer-config.service';
 import { ConfigService } from './services/config/config.service';
+import {EjsAdapter} from '@nestjs-modules/mailer/dist/adapters/ejs.adapter'
 
 @Module({
   imports: [
-    MailerModule.forRootAsync({
-      useClass: MailerConfigService,
+    MailerModule.forRoot({
+      transport: {
+        host: process.env.SMTP_HOST,
+        auth: {
+          user: process.env.SMTP_API_KEY,
+          pass: process.env.MAILER_SERVICE_API_KEY,
+        },
+      },
+      template: {
+        adapter: new EjsAdapter(),
+        options: {strict: false},
+      },
     }),
   ],
   providers: [ConfigService],

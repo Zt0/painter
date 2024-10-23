@@ -3,11 +3,14 @@ import {
   Inject,
   CanActivate,
   ExecutionContext,
-  HttpException,
+  HttpException, CustomDecorator, SetMetadata,
 } from '@nestjs/common';
 import { firstValueFrom } from 'rxjs';
 import { Reflector } from '@nestjs/core';
 import { ClientProxy } from '@nestjs/microservices';
+
+export const ROLES_KEY = 'roles'
+export const Role = (...roles: string[]): CustomDecorator => SetMetadata(ROLES_KEY, roles)
 
 @Injectable()
 export class AuthGuard implements CanActivate {

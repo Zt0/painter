@@ -1,35 +1,28 @@
 import { Module } from '@nestjs/common';
 import { ClientProxyFactory } from '@nestjs/microservices';
-import { MongooseModule } from '@nestjs/mongoose';
 import { UserController } from './user.controller';
 import { UserService } from './services/user.service';
-import { MongoConfigService } from './services/config/mongo-config.service';
 import { ConfigService } from './services/config/config.service';
-import { UserSchema } from './schemas/user.schema';
-import { UserLinkSchema } from './schemas/user-link.schema';
+import * as dotenv from 'dotenv'
+import {DefaultDatabaseConfiguration} from "./orm.module";
+import {UserRepository} from "./repositories/user.repository";
+import {AuthRepository} from "./repositories/auth.repository";
+import {JwtModule} from '@nestjs/jwt'
+dotenv.config()
 
 @Module({
-  imports: [
-    MongooseModule.forRootAsync({
-      useClass: MongoConfigService,
+  imports: [DefaultDatabaseConfiguration(),
+    JwtModule.register({
+      secret: process.env.JWT_ACCESS_TOKEN_SECRET,
+      signOptions: {expiresIn: process.env.ACCESS_TOKEN_DURATION},
     }),
-    MongooseModule.forFeature([
-      {
-        name: 'User',
-        schema: UserSchema,
-        collection: 'users',
-      },
-      {
-        name: 'UserLink',
-        schema: UserLinkSchema,
-        collection: 'user_links',
-      },
-    ]),
   ],
   controllers: [UserController],
   providers: [
     UserService,
     ConfigService,
+    UserRepository,
+    AuthRepository,
     {
       provide: 'MAILER_SERVICE',
       useFactory: (configService: ConfigService) => {

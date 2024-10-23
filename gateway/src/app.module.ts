@@ -6,23 +6,29 @@ import { UsersController } from './users.controller';
 import { TasksController } from './tasks.controller';
 
 import { AuthGuard } from './services/guards/authorization.guard';
-import { PermissionGuard } from './services/guards/permission.guard';
 
 import { ConfigService } from './services/config/config.service';
+import { RolesGuard } from './services/guards/role.guard';
+import { DefaultDatabaseConfiguration } from './orm.module';
+import { JwtModule } from '@nestjs/jwt';
+import * as dotenv from 'dotenv'
+import { AuthRepository } from './repositories/auth.repository';
+dotenv.config()
 
 @Module({
-  imports: [],
+  imports: [DefaultDatabaseConfiguration(),
+    JwtModule.register({
+      secret: process.env.JWT_ACCESS_TOKEN_SECRET,
+      signOptions: {expiresIn: process.env.ACCESS_TOKEN_DURATION},
+    }),],
   controllers: [UsersController, TasksController],
   providers: [
+    AuthRepository,
     ConfigService,
-    {
-      provide: 'TOKEN_SERVICE',
-      useFactory: (configService: ConfigService) => {
-        const tokenServiceOptions = configService.get('tokenService');
-        return ClientProxyFactory.create(tokenServiceOptions);
-      },
-      inject: [ConfigService],
-    },
+    // {
+    //   provide: APP_GUARD,
+    //   useClass: RolesGuard,
+    // },
     {
       provide: 'USER_SERVICE',
       useFactory: (configService: ConfigService) => {
@@ -37,23 +43,6 @@ import { ConfigService } from './services/config/config.service';
         return ClientProxyFactory.create(configService.get('taskService'));
       },
       inject: [ConfigService],
-    },
-    {
-      provide: 'PERMISSION_SERVICE',
-      useFactory: (configService: ConfigService) => {
-        return ClientProxyFactory.create(
-          configService.get('permissionService'),
-        );
-      },
-      inject: [ConfigService],
-    },
-    {
-      provide: APP_GUARD,
-      useClass: AuthGuard,
-    },
-    {
-      provide: APP_GUARD,
-      useClass: PermissionGuard,
     },
   ],
 })

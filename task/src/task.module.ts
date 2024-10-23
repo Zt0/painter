@@ -1,23 +1,19 @@
 import { Module } from '@nestjs/common';
-import { MongooseModule } from '@nestjs/mongoose';
 
-import { MongoConfigService } from './services/config/mongo-config.service';
 import { TaskController } from './task.controller';
 import { TaskService } from './services/task.service';
-import { TaskSchema } from './schemas/task.schema';
+import { DefaultDatabaseConfiguration } from './orm.module';
+import {JwtModule} from '@nestjs/jwt'
+import * as dotenv from 'dotenv'
+dotenv.config()
 
 @Module({
   imports: [
-    MongooseModule.forRootAsync({
-      useClass: MongoConfigService,
-    }),
-    MongooseModule.forFeature([
-      {
-        name: 'Task',
-        schema: TaskSchema,
-      },
-    ]),
-  ],
+    DefaultDatabaseConfiguration(),
+    JwtModule.register({
+      secret: process.env.JWT_ACCESS_TOKEN_SECRET,
+      signOptions: {expiresIn: process.env.ACCESS_TOKEN_DURATION},
+    })],
   controllers: [TaskController],
   providers: [TaskService],
 })
