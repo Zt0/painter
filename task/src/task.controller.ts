@@ -13,12 +13,12 @@ import { ITaskUpdateByIdResponse } from './interfaces/task-update-by-id-response
 export class TaskController {
   constructor(private readonly taskService: TaskService) {}
 
-  @MessagePattern('task_search_by_user_id')
+  @MessagePattern('posts_get')
   public async taskSearchByUserId(
-    userId: string,
-  ): Promise<ITaskSearchByUserResponse> {
-    let result: ITaskSearchByUserResponse;
-    return result;
+    {authUUID}:{ authUUID: string },
+  ): Promise<unknown[]> {
+    const tasks = await this.taskService.getPosts(authUUID)
+    return tasks;
   }
 
   @MessagePattern('task_update_by_id')
@@ -31,12 +31,12 @@ export class TaskController {
     return result;
   }
 
-  @MessagePattern('task_create')
-  public async taskCreate(taskBody: ITask): Promise<ITaskCreateResponse> {
+  @MessagePattern('post_create')
+  public async taskCreate(taskBody: ITask): Promise<unknown> {
     let result: ITaskCreateResponse;
     console.log({taskBody});
-
-    return result;
+    const post = await this.taskService.createTask(taskBody)
+    return post;
   }
 
   @MessagePattern('task_delete_by_id')

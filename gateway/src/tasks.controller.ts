@@ -41,25 +41,24 @@ export class TasksController {
   ) {}
 
   @Get()
-  @Authorization(true)
-  @Permission('task_search_by_user_id')
-  @ApiOkResponse({
-    type: GetTasksResponseDto,
-    description: 'List of tasks for signed in user',
-  })
-  public async getTasks(
-    @Req() request: IAuthorizedRequest,
-  ): Promise<GetTasksResponseDto> {
-    const userInfo = request.user;
-
-    const tasksResponse: IServiceTaskSearchByUserIdResponse = await firstValueFrom(
-      this.taskServiceClient.send('task_search_by_user_id', userInfo.id),
+  @Role('')
+  @UseGuards(RolesGuard)
+  public async getPosts(
+    @Req() {uuid}: Request & {uuid: string},
+    @Body() taskRequest: CreatePostDto,
+  ): Promise<unknown> {
+    console.log(34343)
+    const posts: unknown[] = await firstValueFrom(
+      this.taskServiceClient.send(
+        'posts_get',
+        { authUUID: uuid },
+      ),
     );
 
     return {
-      message: tasksResponse.message,
+      message: 'getPosts.message',
       data: {
-        tasks: tasksResponse.tasks,
+        task: posts,
       },
       errors: null,
     };
@@ -75,31 +74,20 @@ export class TasksController {
   public async createTask(
     @Req() {uuid}: Request & {uuid: string},
     @Body() taskRequest: CreatePostDto,
-  ): Promise<CreateTaskResponseDto> {
+  ): Promise<unknown> {
     console.log(34343)
     const createTaskResponse: IServiceTaskCreateResponse = await firstValueFrom(
       this.taskServiceClient.send(
-        'task_create',
-        Object.assign(taskRequest, {uuid}),
+        'post_create',
+        { authUUID: uuid, ...taskRequest },
       ),
     );
     console.log("end")
 
-    if (createTaskResponse.status !== HttpStatus.CREATED) {
-      throw new HttpException(
-        {
-          message: createTaskResponse.message,
-          data: null,
-          errors: createTaskResponse.errors,
-        },
-        createTaskResponse.status,
-      );
-    }
-
     return {
-      message: createTaskResponse.message,
+      message: 'createTaskResponse.message',
       data: {
-        task: createTaskResponse.task,
+        task: createTaskResponse,
       },
       errors: null,
     };

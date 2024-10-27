@@ -19,8 +19,8 @@ export class Post extends Auditable {
     @Column({type: 'varchar', unique: true})
     uuid: string
 
-    @Column({type: 'int', unique: true})
-    authId: number
+    @Column({type: 'varchar'})
+    authUUID: string
 
     @Column({type: 'varchar'})
     title: string

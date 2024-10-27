@@ -5,6 +5,7 @@ import { TaskService } from './services/task.service';
 import { DefaultDatabaseConfiguration } from './orm.module';
 import {JwtModule} from '@nestjs/jwt'
 import * as dotenv from 'dotenv'
+import { PostRepository } from './repositories/post.repository';
 dotenv.config()
 
 @Module({
@@ -15,6 +16,6 @@ dotenv.config()
       signOptions: {expiresIn: process.env.ACCESS_TOKEN_DURATION},
     })],
   controllers: [TaskController],
-  providers: [TaskService],
+  providers: [TaskService, PostRepository],
 })
 export class TaskModule {}
