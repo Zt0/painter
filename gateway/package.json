@@ -21,6 +21,7 @@
     "@nestjs/platform-express": "^10.4.5",
     "@nestjs/swagger": "7.4.2",
     "@nestjs/typeorm": "^10.0.2",
+    "class-validator": "^0.14.1",
     "mysql2": "^3.11.3",
     "passport": "^0.7.0",
     "reflect-metadata": "0.2.2",

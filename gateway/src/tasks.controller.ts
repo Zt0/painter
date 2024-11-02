@@ -9,7 +9,7 @@ import {
   Body,
   Req,
   HttpException,
-  HttpStatus, UseGuards,
+  HttpStatus, UseGuards, Patch,
 } from '@nestjs/common';
 import { firstValueFrom } from 'rxjs';
 import { ClientProxy } from '@nestjs/microservices';
@@ -27,7 +27,7 @@ import { GetTasksResponseDto } from './interfaces/task/dto/get-tasks-response.dt
 import { CreateTaskResponseDto } from './interfaces/task/dto/create-task-response.dto';
 import { DeleteTaskResponseDto } from './interfaces/task/dto/delete-task-response.dto';
 import { UpdateTaskResponseDto } from './interfaces/task/dto/update-task-response.dto';
-import { CreatePostDto } from './interfaces/task/dto/create-post.dto';
+import { CreatePostDto, UpdatePostDto } from './interfaces/task/dto/create-post.dto';
 import { UpdateTaskDto } from './interfaces/task/dto/update-task.dto';
 import { TaskIdDto } from './interfaces/task/dto/task-id.dto';
 import { RolesGuard } from './services/guards/role.guard';
@@ -93,6 +93,55 @@ export class TasksController {
     };
   }
 
+  @Patch('/:id')
+  @Authorization(true)
+  @Role('')
+  @UseGuards(RolesGuard)
+  public async updatePost(
+    @Req() {uuid}: Request & {uuid: string},
+    @Body() taskRequest: UpdatePostDto,
+    @Param('id') id: string,
+  ): Promise<unknown> {
+    const updateTaskResponse: IServiceTaskCreateResponse = await firstValueFrom(
+      this.taskServiceClient.send(
+        'post_update',
+        { id, authUUID: uuid, ...taskRequest },
+      ),
+    );
+    console.log({updateTaskResponse});
+    return {
+      message: 'updateTaskResponse.message',
+      data: {
+        task: updateTaskResponse,
+      },
+      errors: null,
+    };
+  }
+
+  @Get('/:id')
+  @Authorization(true)
+  @Role('')
+  @UseGuards(RolesGuard)
+  public async getPost(
+    @Req() {uuid}: Request & {uuid: string},
+    @Param('id') id: string,
+  ): Promise<unknown> {
+    const getPostResponse: IServiceTaskCreateResponse = await firstValueFrom(
+      this.taskServiceClient.send(
+        'post_get',
+        { id, authUUID: uuid },
+      ),
+    );
+    console.log({getPostResponse});
+    return {
+      message: 'getPost.message',
+      data: {
+        task: getPostResponse,
+      },
+      errors: null,
+    };
+  }
+
   @Delete(':id')
   @Authorization(true)
   @Permission('task_delete_by_id')
@@ -126,46 +175,6 @@ export class TasksController {
     return {
       message: deleteTaskResponse.message,
       data: null,
-      errors: null,
-    };
-  }
-
-  @Put(':id')
-  @Authorization(true)
-  @Permission('task_update_by_id')
-  @ApiOkResponse({
-    type: UpdateTaskResponseDto,
-  })
-  public async updateTask(
-    @Req() request: IAuthorizedRequest,
-    @Param() params: TaskIdDto,
-    @Body() taskRequest: UpdateTaskDto,
-  ): Promise<UpdateTaskResponseDto> {
-    const userInfo = request.user;
-    const updateTaskResponse: IServiceTaskUpdateByIdResponse = await firstValueFrom(
-      this.taskServiceClient.send('task_update_by_id', {
-        id: params.id,
-        userId: userInfo.id,
-        task: taskRequest,
-      }),
-    );
-
-    if (updateTaskResponse.status !== HttpStatus.OK) {
-      throw new HttpException(
-        {
-          message: updateTaskResponse.message,
-          errors: updateTaskResponse.errors,
-          data: null,
-        },
-        updateTaskResponse.status,
-      );
-    }
-
-    return {
-      message: updateTaskResponse.message,
-      data: {
-        task: updateTaskResponse.task,
-      },
       errors: null,
     };
   }

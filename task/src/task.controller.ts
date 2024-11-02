@@ -8,6 +8,7 @@ import { ITaskSearchByUserResponse } from './interfaces/task-search-by-user-resp
 import { ITaskDeleteResponse } from './interfaces/task-delete-response.interface';
 import { ITaskCreateResponse } from './interfaces/task-create-response.interface';
 import { ITaskUpdateByIdResponse } from './interfaces/task-update-by-id-response.interface';
+import { Post } from './entities/post.entity';
 
 @Controller()
 export class TaskController {
@@ -21,22 +22,27 @@ export class TaskController {
     return tasks;
   }
 
-  @MessagePattern('task_update_by_id')
-  public async taskUpdateById(params: {
-    task: ITaskUpdateParams;
-    id: string;
-    userId: string;
-  }): Promise<ITaskUpdateByIdResponse> {
-    let result: ITaskUpdateByIdResponse;
-    return result;
-  }
-
   @MessagePattern('post_create')
   public async taskCreate(taskBody: ITask): Promise<unknown> {
     let result: ITaskCreateResponse;
     console.log({taskBody});
     const post = await this.taskService.createTask(taskBody)
     return post;
+  }
+
+  @MessagePattern('post_update')
+  public async taskUpdate(taskBody: unknown & {id: string}): Promise<unknown> {
+    const {id, ...updatedPostData} = taskBody
+    console.log({upd: taskBody});
+    await this.taskService.updatePost(id, updatedPostData)
+    return {status: 200}
+  }
+
+  @MessagePattern('post_get')
+  public async taskGet(request: { id: string }): Promise<Post> {
+    console.log({getPost: request.id});
+    const post = await this.taskService.getPost(request.id)
+    return post
   }
 
   @MessagePattern('task_delete_by_id')
