@@ -1,4 +1,4 @@
-import {BadRequestException, Injectable} from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { ConfigService } from './config/config.service';
 import {UserRepository} from "../repositories/user.repository";
 import {AuthRepository} from "../repositories/auth.repository";
@@ -7,6 +7,12 @@ import {Auth} from "../entities/auth.entity";
 import { TokensDTO } from '../types/auth';
 import {JwtService} from '@nestjs/jwt'
 import { User } from '../entities/user.entity';
+import { handleError } from '../utils/utils';
+import {
+  InternalServerErrorException,
+  BadRequestException,
+  UnauthorizedException,
+} from '../libs/exceptions';
 
 @Injectable()
 export class UserService {
@@ -24,6 +30,7 @@ export class UserService {
         throw new BadRequestException("Email already used by other user")
       }
       userData.password = await bcrypt.hash(userData.password, 10)
+      console.log(userData);
       await this.authRepository.insert(userData)
     }
     catch (e) {
@@ -46,13 +53,19 @@ export class UserService {
     }
   }
 
-  async login(email: string, remember: boolean): Promise<unknown> {
+  async login(authBody: Partial<Auth>, remember: boolean): Promise<unknown> {
     try {
+      const {email, password} = authBody
       const auth = await this.authRepository.findOne({ where: {email} })
+      console.log(await bcrypt.compare(password, auth.password), password, auth.password);
+      if (!await bcrypt.compare(password, auth.password)) {
+        throw new UnauthorizedException("invalid login or password")
+      }
       const accessAndRefreshTokens = await this.accessAndRefreshTokens(auth.uuid, remember)
       return accessAndRefreshTokens
     } catch (error) {
-      throw new error
+      handleError(error)
+      throw new InternalServerErrorException("internal")
     }
   }
 

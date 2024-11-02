@@ -57,7 +57,7 @@ export class UserController {
     console.log(3335, userParams)
 
     let result: IUserCreateResponse;
-    const tokens = await this.userService.login(userParams.email, true)
+    const tokens = await this.userService.login(userParams, true)
     console.log({tokens})
     return {status: 200, message: "done", user: tokens, errors: null};
   }
