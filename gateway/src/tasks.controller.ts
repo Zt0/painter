@@ -64,6 +64,29 @@ export class TasksController {
     };
   }
 
+  @Get('/feed')
+  @Role('')
+  @UseGuards(RolesGuard)
+  public async getPostsFeed(
+    @Req() {uuid}: Request & {uuid: string},
+    @Body() taskRequest: CreatePostDto,
+  ): Promise<unknown> {
+    const posts: unknown[] = await firstValueFrom(
+      this.taskServiceClient.send(
+        'posts_feed_get',
+        { authUUID: uuid },
+      ),
+    );
+
+    return {
+      message: 'getPosts.message',
+      data: {
+        task: posts,
+      },
+      errors: null,
+    };
+  }
+
   @Post()
   @Authorization(true)
   @Role('')

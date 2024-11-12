@@ -37,4 +37,10 @@ export class TaskService {
     console.log({posts});
     return posts
   }
+
+  async getPostsFeed(): Promise<Post[]> {
+    const posts = await this.postRepository.find({where: {public: true}})
+    console.log({posts});
+    return posts
+  }
 }

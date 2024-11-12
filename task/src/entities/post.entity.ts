@@ -27,4 +27,7 @@ export class Post extends Auditable {
 
     @Column({type: 'varchar', nullable: true})
     description?: string
+
+    @Column({type: 'boolean', nullable: true, default: true})
+    public?: boolean
 }

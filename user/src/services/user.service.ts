@@ -13,6 +13,7 @@ import {
   BadRequestException,
   UnauthorizedException,
 } from '../libs/exceptions';
+import { Equal } from 'typeorm';
 
 @Injectable()
 export class UserService {
@@ -25,7 +26,8 @@ export class UserService {
 
   async register(userData: Partial<Auth>): Promise<void> {
     try {
-      const auth = await this.authRepository.findOne({ where: { email: userData.email } })
+      const auth = await this.authRepository.findOne({ where: { email: Equal(userData.email) } })
+      console.log(userData, {auth});
       if (auth) {
         throw new BadRequestException("Email already used by other user")
       }
@@ -56,7 +58,8 @@ export class UserService {
   async login(authBody: Partial<Auth>, remember: boolean): Promise<unknown> {
     try {
       const {email, password} = authBody
-      const auth = await this.authRepository.findOne({ where: {email} })
+      const auth = await this.authRepository.findOne({ where: {email: Equal(email)} })
+      console.log({auth, authBody});
       console.log(await bcrypt.compare(password, auth.password), password, auth.password);
       if (!await bcrypt.compare(password, auth.password)) {
         throw new UnauthorizedException("invalid login or password")
@@ -64,6 +67,7 @@ export class UserService {
       const accessAndRefreshTokens = await this.accessAndRefreshTokens(auth.uuid, remember)
       return accessAndRefreshTokens
     } catch (error) {
+      console.log({error});
       handleError(error)
       throw new InternalServerErrorException("internal")
     }

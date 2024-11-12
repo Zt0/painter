@@ -15,10 +15,18 @@ export class TaskController {
   constructor(private readonly taskService: TaskService) {}
 
   @MessagePattern('posts_get')
-  public async taskSearchByUserId(
+  public async getUserPosts(
     {authUUID}:{ authUUID: string },
   ): Promise<unknown[]> {
     const tasks = await this.taskService.getPosts(authUUID)
+    return tasks;
+  }
+
+  @MessagePattern('posts_feed_get')
+  public async getPostsFeed(
+    {authUUID}:{ authUUID: string },
+  ): Promise<unknown[]> {
+    const tasks = await this.taskService.getPostsFeed()
     return tasks;
   }
 
