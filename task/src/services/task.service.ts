@@ -43,4 +43,8 @@ export class TaskService {
     console.log({posts});
     return posts
   }
+
+  async deletePost(uuid: string): Promise<void> {
+    await this.postRepository.delete({ uuid: Equal(uuid) })
+  }
 }

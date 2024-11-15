@@ -31,6 +31,12 @@ export class User extends Auditable {
     @Column({type: 'varchar', nullable: true})
     description?: string
 
+    @Column({type: 'varchar'})
+    firstName: string
+
+    @Column({type: 'varchar'})
+    lastName: string
+
     @Column({type: 'varchar', nullable: true})
     imageURL?: string
 

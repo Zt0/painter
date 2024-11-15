@@ -1,11 +1,19 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsOptional, IsString } from 'class-validator';
+import { IsBoolean, IsOptional, IsString } from 'class-validator';
 
 export class CreatePostDto {
   @ApiProperty({ example: 'test task' })
   title: string;
   @ApiProperty({ example: 'test task description' })
   description: string;
+
+  @IsString()
+  @IsOptional()
+  imageURL: string
+
+  @IsBoolean()
+  @IsOptional()
+  private: boolean
 }
 
 export class UpdatePostDto {

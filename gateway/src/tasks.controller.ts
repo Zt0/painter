@@ -45,7 +45,6 @@ export class TasksController {
   @UseGuards(RolesGuard)
   public async getPosts(
     @Req() {uuid}: Request & {uuid: string},
-    @Body() taskRequest: CreatePostDto,
   ): Promise<unknown> {
     console.log(34343)
     const posts: unknown[] = await firstValueFrom(
@@ -69,7 +68,6 @@ export class TasksController {
   @UseGuards(RolesGuard)
   public async getPostsFeed(
     @Req() {uuid}: Request & {uuid: string},
-    @Body() taskRequest: CreatePostDto,
   ): Promise<unknown> {
     const posts: unknown[] = await firstValueFrom(
       this.taskServiceClient.send(
@@ -175,12 +173,10 @@ export class TasksController {
     @Req() request: IAuthorizedRequest,
     @Param() params: TaskIdDto,
   ): Promise<DeleteTaskResponseDto> {
-    const userInfo = request.user;
 
     const deleteTaskResponse: IServiceTaskDeleteResponse = await firstValueFrom(
-      this.taskServiceClient.send('task_delete_by_id', {
+      this.taskServiceClient.send('post_delete', {
         id: params.id,
-        userId: userInfo.id,
       }),
     );
 

@@ -25,6 +25,12 @@ export class User extends Auditable {
     @Column({type: 'date', nullable: true})
     dateOfBirth?: Date
 
+    @Column({type: 'varchar'})
+    firstName: string
+
+    @Column({type: 'varchar'})
+    lastName: string
+
     @Column({type: 'varchar', nullable: true})
     address?: string
 

@@ -23,16 +23,13 @@ export class TaskController {
   }
 
   @MessagePattern('posts_feed_get')
-  public async getPostsFeed(
-    {authUUID}:{ authUUID: string },
-  ): Promise<unknown[]> {
+  public async getPostsFeed(): Promise<unknown[]> {
     const tasks = await this.taskService.getPostsFeed()
     return tasks;
   }
 
   @MessagePattern('post_create')
   public async taskCreate(taskBody: ITask): Promise<unknown> {
-    let result: ITaskCreateResponse;
     console.log({taskBody});
     const post = await this.taskService.createTask(taskBody)
     return post;
@@ -53,13 +50,11 @@ export class TaskController {
     return post
   }
 
-  @MessagePattern('task_delete_by_id')
-  public async taskDeleteForUser(params: {
-    userId: string;
-    id: string;
-  }): Promise<ITaskDeleteResponse> {
-    let result: ITaskDeleteResponse;
-
-    return result;
+  @MessagePattern('post_delete')
+  public async taskDeleteForUser(
+    { id }: { id: string }
+  ): Promise<unknown> {
+    await this.taskService.deletePost(id)
+    return true
   }
 }

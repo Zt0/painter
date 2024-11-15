@@ -73,8 +73,8 @@ export class UserService {
     }
   }
 
-  async getUserById(id: number): Promise<User> {
-    const user = await this.userRepository.findOne({where: {id}})
+  async getUserById(uuid: string): Promise<User> {
+    const user = await this.userRepository.findOne({where: {uuid}})
     console.log({user})
     return user
   }
