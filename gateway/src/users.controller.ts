@@ -43,18 +43,14 @@ export class UsersController {
   ) {}
 
   @Get('/:id')
-  // @Authorization(true)
-  // @ApiOkResponse({
-  //   type: GetUserByTokenResponseDto,
-  // })
+  @UseGuards(RolesGuard)
   public async getUserByToken(
     @Param('id') id: string,
-    @Req() request: IAuthorizedRequest,
+    @Req() {uuid}: Request & {uuid: string},
   ): Promise<unknown> {
-    const userInfo = request.user;
-    console.log(id, 33)
+    console.log(uuid, 33)
     const userResponse: IServiceUserGetByIdResponse = await firstValueFrom(
-      this.userServiceClient.send('user_get_by_id', id),
+      this.userServiceClient.send('user_get_by_id', { uuid }),
     );
     console.log({ userResponse });
     return {

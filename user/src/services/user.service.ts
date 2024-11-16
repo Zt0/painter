@@ -11,7 +11,7 @@ import { handleError } from '../utils/utils';
 import {
   InternalServerErrorException,
   BadRequestException,
-  UnauthorizedException,
+  UnauthorizedException, NotFoundException,
 } from '../libs/exceptions';
 import { Equal } from 'typeorm';
 
@@ -33,7 +33,13 @@ export class UserService {
       }
       userData.password = await bcrypt.hash(userData.password, 10)
       console.log(userData);
-      await this.authRepository.insert(userData)
+      const newAuth = await this.authRepository.save(userData)
+      await this.userRepository.save(
+        {
+          authId: newAuth.id,
+          firstName: userData['firstName'],
+          lastName: userData['lastName'],
+      })
     }
     catch (e) {
       throw e
@@ -74,7 +80,12 @@ export class UserService {
   }
 
   async getUserById(uuid: string): Promise<User> {
-    const user = await this.userRepository.findOne({where: {uuid}})
+    const auth = await this.authRepository.findOne({where: {uuid}})
+    console.log({ auth });
+    if (!auth) {
+      throw new NotFoundException("auth not found")
+    }
+    const user = await this.userRepository.findOne({where: {authId: Equal(auth.id)}})
     console.log({user})
     return user
   }

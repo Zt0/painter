@@ -27,9 +27,9 @@ export class UserController {
   }
 
   @MessagePattern('user_get_by_id')
-  public async getUserById(id: string): Promise<User> {
-    console.log(4,{id})
-    const result = await this.userService.getUserById(id)
+  public async getUserById({ uuid }: { uuid: string }): Promise<User> {
+    console.log(4,{uuid})
+    const result = await this.userService.getUserById(uuid)
     console.log({result});
     return result;
   }
