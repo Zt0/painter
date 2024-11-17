@@ -25,6 +25,9 @@ export class Post extends Auditable {
     @Column({type: 'varchar'})
     title: string
 
+    @Column({type: 'varchar'})
+    image: string
+
     @Column({type: 'varchar', nullable: true})
     description?: string
 

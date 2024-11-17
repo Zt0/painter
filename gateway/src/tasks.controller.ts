@@ -3,36 +3,37 @@ import {
   Inject,
   Get,
   Post,
-  Put,
   Delete,
   Param,
   Body,
   Req,
   HttpException,
   HttpStatus, UseGuards, Patch,
+  UseInterceptors,
+  UploadedFile,
 } from '@nestjs/common';
 import { firstValueFrom } from 'rxjs';
 import { ClientProxy } from '@nestjs/microservices';
-import { ApiTags, ApiOkResponse, ApiCreatedResponse } from '@nestjs/swagger';
+import { ApiTags, ApiOkResponse, ApiCreatedResponse, ApiConsumes, ApiBody } from '@nestjs/swagger';
 
 import { Authorization } from './decorators/authorization.decorator';
 import { Permission } from './decorators/permission.decorator';
 
 import { IAuthorizedRequest } from './interfaces/common/authorized-request.interface';
-import { IServiceTaskCreateResponse } from './interfaces/task/service-task-create-response.interface';
+import { EditTaskDto, IServiceTaskCreateResponse } from './interfaces/task/service-task-create-response.interface';
 import { IServiceTaskDeleteResponse } from './interfaces/task/service-task-delete-response.interface';
-import { IServiceTaskSearchByUserIdResponse } from './interfaces/task/service-task-search-by-user-id-response.interface';
-import { IServiceTaskUpdateByIdResponse } from './interfaces/task/service-task-update-by-id-response.interface';
-import { GetTasksResponseDto } from './interfaces/task/dto/get-tasks-response.dto';
 import { CreateTaskResponseDto } from './interfaces/task/dto/create-task-response.dto';
 import { DeleteTaskResponseDto } from './interfaces/task/dto/delete-task-response.dto';
-import { UpdateTaskResponseDto } from './interfaces/task/dto/update-task-response.dto';
 import { CreatePostDto, UpdatePostDto } from './interfaces/task/dto/create-post.dto';
-import { UpdateTaskDto } from './interfaces/task/dto/update-task.dto';
 import { TaskIdDto } from './interfaces/task/dto/task-id.dto';
 import { RolesGuard } from './services/guards/role.guard';
 import { Role } from './services/guards/authorization.guard';
-
+import { FileInterceptor } from '@nestjs/platform-express';
+import { Storage } from '@google-cloud/storage';
+import { extname } from 'path';
+import { v4 as uuidv4 } from 'uuid';
+import { ConfigService } from './services/config/config.service';
+const config = new ConfigService()
 @Controller('tasks')
 @ApiTags('tasks')
 export class TasksController {
@@ -89,24 +90,73 @@ export class TasksController {
   @Authorization(true)
   @Role('')
   @UseGuards(RolesGuard)
+  @UseInterceptors(FileInterceptor('image'))
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        title: { type: 'string' },
+        description: { type: 'string' },
+        image: {
+          type: 'string',
+          format: 'binary',
+        },
+      },
+    },
+  })
   @ApiCreatedResponse({
     type: CreateTaskResponseDto,
   })
   public async createTask(
-    @Req() {uuid}: Request & {uuid: string},
+    @Req() { uuid }: Request & { uuid: string },
     @Body() taskRequest: CreatePostDto,
+    @UploadedFile() file: Express.Multer.File,
   ): Promise<unknown> {
-    console.log(34343)
-    const createTaskResponse: IServiceTaskCreateResponse = await firstValueFrom(
-      this.taskServiceClient.send(
-        'post_create',
-        { authUUID: uuid, ...taskRequest },
-      ),
-    );
-    console.log("end")
+    const storage = new Storage({
+      credentials: JSON.parse(config.get('POLLIN_FIREBASE_ADMINSDK_SA'))
+    });
+    const bucketName = 'black-resource-347917.appspot.com';
+    let imageUrl = null;
 
+    if (file) {
+      const uniqueFileName = `painter-post-images/${uuidv4()}${extname(file.originalname)}`;
+      const bucket = storage.bucket(bucketName);
+      const blob = bucket.file(uniqueFileName);
+      const blobStream = blob.createWriteStream({
+        resumable: false,
+        gzip: true,
+        metadata: {
+          contentType: file.mimetype,
+        },
+      });
+
+      try {
+        // Upload the file to GCP
+        blobStream.end(file.buffer);
+        imageUrl = `https://storage.googleapis.com/${bucketName}/${uniqueFileName}`;
+      } catch (error) {
+        console.error('Error uploading file to GCP:', error);
+        throw new Error('Failed to upload file to GCP.');
+      }
+    }
+
+    // Pass the image URL to the service
+    console.log(111, {
+      authUUID: uuid,
+      ...taskRequest,
+      image: imageUrl, // Include the uploaded image URL
+    });
+    const createTaskResponse: IServiceTaskCreateResponse = await firstValueFrom(
+      this.taskServiceClient.send('post_create', {
+        authUUID: uuid,
+        ...taskRequest,
+        image: imageUrl, // Include the uploaded image URL
+      }),
+    );
+    console.log(222);
     return {
-      message: 'createTaskResponse.message',
+      message: 'Task created successfully',
       data: {
         task: createTaskResponse,
       },
@@ -114,30 +164,81 @@ export class TasksController {
     };
   }
 
-  @Patch('/:id')
+  @Patch(':id')
   @Authorization(true)
   @Role('')
   @UseGuards(RolesGuard)
-  public async updatePost(
-    @Req() {uuid}: Request & {uuid: string},
-    @Body() taskRequest: UpdatePostDto,
-    @Param('id') id: string,
+  @UseInterceptors(FileInterceptor('image'))
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        title: { type: 'string' },
+        description: { type: 'string' },
+        image: {
+          type: 'string',
+          format: 'binary',
+        },
+      },
+    },
+  })
+  public async editTask(
+    @Req() { uuid }: Request & { uuid: string },
+    @Param('id') taskId: string,
+    @Body() taskRequest: EditTaskDto, // DTO with optional fields
+    @UploadedFile() file?: Express.Multer.File, // Optional file
   ): Promise<unknown> {
-    const updateTaskResponse: IServiceTaskCreateResponse = await firstValueFrom(
-      this.taskServiceClient.send(
-        'post_update',
-        { id, authUUID: uuid, ...taskRequest },
-      ),
+    const storage = new Storage({
+      credentials: JSON.parse(config.get('POLLIN_FIREBASE_ADMINSDK_SA')),
+    });
+    const bucketName = 'black-resource-347917.appspot.com';
+    let imageUrl = taskRequest.imageUrl; // Existing image URL from task
+
+    if (file) {
+      const uniqueFileName = `painter-post-images/${uuidv4()}${extname(file.originalname)}`;
+      const bucket = storage.bucket(bucketName);
+      const blob = bucket.file(uniqueFileName);
+      const blobStream = blob.createWriteStream({
+        resumable: false,
+        gzip: true,
+        metadata: {
+          contentType: file.mimetype,
+        },
+      });
+
+      try {
+        // Upload the file to GCP
+        blobStream.end(file.buffer);
+        imageUrl = `https://storage.googleapis.com/${bucketName}/${uniqueFileName}`;
+      } catch (error) {
+        console.error('Error uploading file to GCP:', error);
+        throw new Error('Failed to upload file to GCP.');
+      }
+    }
+
+    // Merge provided fields with existing task data
+    const updateTaskPayload = {
+      authUUID: uuid,
+      id: taskId,
+      ...(taskRequest.title && { title: taskRequest.title }),
+      ...(taskRequest.description && { description: taskRequest.description }),
+      image: imageUrl, // New or existing image URL
+    };
+    console.log({updateTaskPayload});
+    const editTaskResponse: unknown = await firstValueFrom(
+      this.taskServiceClient.send('post_update', updateTaskPayload),
     );
-    console.log({updateTaskResponse});
+
     return {
-      message: 'updateTaskResponse.message',
+      message: 'Task updated successfully',
       data: {
-        task: updateTaskResponse,
+        task: editTaskResponse,
       },
       errors: null,
     };
   }
+
 
   @Get('/:id')
   @Authorization(true)

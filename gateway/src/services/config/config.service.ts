@@ -15,6 +15,8 @@ export class ConfigService {
       },
       transport: Transport.TCP,
     };
+    this.envConfig.gcp_storage = process.env.GCP_STORAGE;
+    this.envConfig.POLLIN_FIREBASE_ADMINSDK_SA = process.env.POLLIN_FIREBASE_ADMINSDK_SA;
     this.envConfig.host = process.env.DB_SQL_LOCAL_HOST;
     this.envConfig.port = process.env.DB_SQL_LOCAL_PORT;
     this.envConfig.db = process.env.DB_SQL_NAME;

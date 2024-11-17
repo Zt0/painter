@@ -6,3 +6,18 @@ export interface IServiceTaskCreateResponse {
   task: ITask | null;
   errors: { [key: string]: any };
 }
+
+import { IsOptional, IsString } from 'class-validator';
+
+export class EditTaskDto {
+  @IsOptional()
+  @IsString()
+  title?: string;
+
+  @IsOptional()
+  @IsString()
+  description?: string;
+
+  @IsOptional()
+  imageUrl?: string; // Retain the current image if not updated
+}
