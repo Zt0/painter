@@ -5,7 +5,6 @@ export class ConfigService {
   private readonly envConfig: { [key: string]: any } = null;
 
   constructor() {
-    console.log(325252, process.env.API_GATEWAY_PORT)
     this.envConfig = {};
     this.envConfig.api_gateway_port = process.env.API_GATEWAY_PORT;
     this.envConfig.tokenService = {
@@ -17,6 +16,7 @@ export class ConfigService {
     };
     this.envConfig.gcp_storage = process.env.GCP_STORAGE;
     this.envConfig.POLLIN_FIREBASE_ADMINSDK_SA = process.env.POLLIN_FIREBASE_ADMINSDK_SA;
+    this.envConfig.LOGGING_ACCOUNT = process.env.LOGGING_ACCOUNT;
     this.envConfig.host = process.env.DB_SQL_LOCAL_HOST;
     this.envConfig.port = process.env.DB_SQL_LOCAL_PORT;
     this.envConfig.db = process.env.DB_SQL_NAME;
