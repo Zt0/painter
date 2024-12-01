@@ -2,11 +2,13 @@ import { NestFactory } from '@nestjs/core';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import { ConfigService } from './services/config/config.service';
+import { HttpExceptionFilter } from './filters/exception.filter';
 import { quickstart } from './services/logger2';
 
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  app.useGlobalFilters(new HttpExceptionFilter());
   const options = new DocumentBuilder()
     .setTitle('API docs')
     .addTag('users')

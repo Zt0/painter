@@ -42,7 +42,7 @@ export class UsersController {
     @Inject('USER_SERVICE') private readonly userServiceClient: ClientProxy,
   ) {}
 
-  @Get('/:id')
+  @Get()
   @UseGuards(RolesGuard)
   public async getUserByToken(
     @Param('id') id: string,

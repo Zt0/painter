@@ -24,8 +24,12 @@ export class TaskController {
 
   @MessagePattern('posts_feed_get')
   public async getPostsFeed(): Promise<unknown[]> {
+    try {
     const tasks = await this.taskService.getPostsFeed()
     return tasks;
+    } catch (e) {
+      console.log(e)
+    }
   }
 
   @MessagePattern('post_create')
