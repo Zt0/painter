@@ -73,8 +73,8 @@ export class UsersController {
     const createUserResponse: IServiceUserCreateResponse = await firstValueFrom(
       this.userServiceClient.send('register', userRequest),
     );
-    console.log(353)
-    if (createUserResponse.status !== HttpStatus.CREATED) {
+    console.log(353, createUserResponse)
+    if (createUserResponse.status !== 200) {
       throw new HttpException(
         {
           message: createUserResponse.message,

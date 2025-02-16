@@ -18,6 +18,7 @@ export class RolesGuard implements CanActivate {
       const req = context.switchToHttp().getRequest()
       console.log(req.headers, context.getClass(), context.getHandler())
       const authorizationHeader = req.headers.authorization
+      console.log({authorizationHeader})
       if (!authorizationHeader)
         throw new JsonWebTokenError('JwtMalformed')
 

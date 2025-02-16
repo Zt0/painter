@@ -13,6 +13,7 @@ import { DefaultDatabaseConfiguration } from './orm.module';
 import { JwtModule } from '@nestjs/jwt';
 import * as dotenv from 'dotenv'
 import { AuthRepository } from './repositories/auth.repository';
+import { MetricsService } from './services/metrics.service';
 dotenv.config()
 
 @Module({
@@ -25,6 +26,7 @@ dotenv.config()
   providers: [
     AuthRepository,
     ConfigService,
+    MetricsService,
     // {
     //   provide: APP_GUARD,
     //   useClass: RolesGuard,

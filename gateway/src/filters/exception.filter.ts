@@ -10,7 +10,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
     const response = ctx.getResponse<Response>();
     const request = ctx.getRequest<Request>();
     // const status = exception.getStatus();
-    console.log(exception.message, exception.message, 'jwt expired')
+    console.log(exception.message, exception, 'jwt expired')
     if (['jwt expired', 'jwt malformed'].includes(exception.message)) {
         response
       .status(401)

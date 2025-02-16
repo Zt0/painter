@@ -33,11 +33,13 @@ import { Storage } from '@google-cloud/storage';
 import { extname } from 'path';
 import { v4 as uuidv4 } from 'uuid';
 import { ConfigService } from './services/config/config.service';
+import { MetricsService } from './services/metrics.service';
 const config = new ConfigService()
 @Controller('tasks')
 @ApiTags('tasks')
 export class TasksController {
   constructor(
+    private readonly metricsService: MetricsService,
     @Inject('TASK_SERVICE') private readonly taskServiceClient: ClientProxy,
   ) {}
 
@@ -70,6 +72,7 @@ export class TasksController {
   public async getPostsFeed(
     @Req() {uuid}: Request & {uuid: string},
   ): Promise<unknown> {
+    this.metricsService.incrementRequestCounter();
     const posts: unknown[] = await firstValueFrom(
       this.taskServiceClient.send(
         'posts_feed_get',
@@ -81,6 +84,19 @@ export class TasksController {
       message: 'getPosts.message',
       data: {
         task: posts,
+      },
+      errors: null,
+    };
+  }
+
+  @Get('/metrics')
+  public async metrics(
+    @Req() {uuid}: Request & {uuid: string},
+  ): Promise<unknown> {
+    return {
+      message: 'metrics.message',
+      data: {
+        
       },
       errors: null,
     };
