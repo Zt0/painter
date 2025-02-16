@@ -16,7 +16,6 @@ export class RolesGuard implements CanActivate {
   async canActivate(context: ExecutionContext): Promise<boolean> {
     try {
       const req = context.switchToHttp().getRequest()
-      console.log(req.headers, context.getClass(), context.getHandler())
       const authorizationHeader = req.headers.authorization
       console.log({authorizationHeader})
       if (!authorizationHeader)
@@ -24,7 +23,6 @@ export class RolesGuard implements CanActivate {
 
       const token = authorizationHeader.split(' ')[1]
       const {uuid} = await this.jwtService.verifyAsync(token)
-      console.log({uuidddd: uuid});
       req.uuid = uuid
       return true
     } catch (error) {
