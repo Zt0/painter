@@ -51,6 +51,7 @@ export class TasksController {
     @Req() {uuid}: Request & {uuid: string},
   ): Promise<unknown> {
     console.log(34343)
+    StructuredLogger.info('getPostsFeed', 'tasksController', {message: 'stardfdasfasft'})
     const posts: unknown[] = await firstValueFrom(
       this.taskServiceClient.send(
         'posts_get',
