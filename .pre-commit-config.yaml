@@ -4,7 +4,7 @@ repos:
     hooks:
     -   id: ai-commit-generator
         name: Generate Commit Message
-        entry: python -m main.py  # Ensure the script runs
+        entry: python main.py  # Ensure the script runs
         language: system
         args: []
         stages: [prepare-commit-msg]
