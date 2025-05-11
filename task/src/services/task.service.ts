@@ -28,7 +28,6 @@ export class TaskService {
   async getPost(uuid: string): Promise<Post> {
     console.log({uuid});
     const post = await this.postRepository.findOne({where: {uuid: Equal(uuid)}})
-    console.log({post});
     return post
   }
 

@@ -1,0 +1,24 @@
+# app.yaml for the Task service
+runtime: nodejs20 # Or nodejs
+service: task     # Give the service a unique name
+
+# Configuration for App Engine Standard
+instance_class: F1
+automatic_scaling:
+  min_instances: 1 # Can scale to zero if no traffic (Standard only)
+  max_instances: 1
+handlers: # Only needed in Standard if not using entrypoint
+  - url: /.*
+    script: auto
+
+# OR Configuration for App Engine Flexible
+# env: flex
+# resources:
+#   cpu: 0.5 # Maybe smaller resources needed?
+#   memory_gb: 0.25
+# automatic_scaling:
+#   min_num_instances: 0 # Minimum instances (Flexible cannot scale completely to zero without min_num_instances: 0)
+#   max_num_instances: 5
+# entrypoint: yarn start # Or node your_user_entry_file.js
+
+# Add any necessary environment variables, etc.

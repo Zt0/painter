@@ -57,7 +57,7 @@ export class StructuredLogger {
     // Creates a Bunyan Cloud Logging client
     const logStreams = []
     const config = new ConfigService()
-    console.log(JSON.parse(config.get('LOGGING_ACCOUNT')));
+    // console.log(JSON.parse(config.get('LOGGING_ACCOUNT')));
     const loggingBunyan = new LoggingBunyan({
       // redirectToStdout: true,
       // useMessageField: false,

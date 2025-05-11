@@ -29,6 +29,6 @@ export async function quickstart(
     await log.write(entry);
     console.log(`Logged: ${text}`);
   }
-  writeLog();
+  // writeLog();
 }
 quickstart().then(r => {console.log(r)})

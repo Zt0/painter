@@ -1,0 +1,27 @@
+# app.yaml for the User service
+runtime: nodejs20 # Or nodejs if using Flexible and version in package.json
+service: user  # Give the service a unique name
+
+# Configuration for App Engine Standard
+instance_class: F1
+automatic_scaling:
+  min_instances: 1
+  max_instances: 1 # Adjust scaling as needed
+handlers: # Only needed in Standard if not using entrypoint
+  - url: /.*
+    script: auto
+
+# OR Configuration for App Engine Flexible (if you switch)
+# env: flex
+# resources:
+#   cpu: 1
+#   memory_gb: 0.5
+# automatic_scaling:
+#   min_num_instances: 1
+#   max_num_instances: 5
+# entrypoint: yarn start # Or node your_gateway_entry_file.js if no start script
+
+# Add any necessary environment variables, etc.
+# env_variables:
+#   USER_SERVICE_URL: https://user-service-url.appspot.com
+#   TASK_SERVICE_URL: https://task-service-url.appspot.com

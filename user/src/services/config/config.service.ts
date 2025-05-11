@@ -11,7 +11,7 @@ export class ConfigService {
     this.envConfig.port = process.env.DB_SQL_LOCAL_PORT;
     this.envConfig.db = process.env.DB_SQL_NAME;
     this.envConfig.db_user_name = process.env.DB_SQL_USERNAME;
-    this.envConfig.db_user_password = process.env.DB_SQL_USERNAME;
+    this.envConfig.db_user_password = process.env.DB_SQL_PASSWORD;
     this.envConfig.baseUri = process.env.BASE_URI;
     this.envConfig.gatewayPort = process.env.API_GATEWAY_PORT;
     this.envConfig.mailerService = {
