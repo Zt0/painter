@@ -54,30 +54,13 @@ export class StructuredLogger {
   private static logger: bunyan = null
 
   private static initLogger(sourceName: string): bunyan {
-    // Creates a Bunyan Cloud Logging client
     const logStreams = []
-    const config = new ConfigService()
-    // console.log(JSON.parse(config.get('LOGGING_ACCOUNT')));
+
     const loggingBunyan = new LoggingBunyan({
-      // redirectToStdout: true,
-      // useMessageField: false,
       projectId: 'black-resource-347917',
-      // redirectToStdout: true,
-      // useMessageField: true,
-      // logName: 'your-project-name/logs/SystemLog',
-      // resource: {
-      //   type: 'global',
-      // },
-      // credentials: JSON.parse(config.get('LOGGING_ACCOUNT'))
     })
-    // And log to Cloud Logging, logging at 'info' and above
     logStreams.push(loggingBunyan.stream('info'))
-
-    // Log to the console at 'info' and above
     logStreams.push({stream: process.stdout, level: 'info'})
-
-
-    // Create a Bunyan logger that streams to Cloud Logging
     return bunyan.createLogger({name: sourceName, streams: logStreams, serializers: bunyan.stdSerializers})
   }
 
@@ -110,7 +93,7 @@ export class StructuredLogger {
   static error(
     functionName: string,
     eventName: string,
-    data: { message: string },
+    data: { message: string, email?: string },
     logType?: LogType,
   ): void {
     StructuredLogger.logger.error(loggerPayload({functionName, eventName, logType}, data))
@@ -120,7 +103,6 @@ export class StructuredLogger {
     if (!StructuredLogger.logger) {
       StructuredLogger.logger = this.initLogger(LogType.SystemLog)
     }
-    StructuredLogger.logger.info({ a: 'sadfsadfsafd' })
     return StructuredLogger.logger
   }
 }

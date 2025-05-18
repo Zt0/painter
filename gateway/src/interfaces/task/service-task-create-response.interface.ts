@@ -19,5 +19,5 @@ export class EditTaskDto {
   description?: string;
 
   @IsOptional()
-  imageUrl?: string; // Retain the current image if not updated
+  imageUrl?: string;
 }

@@ -27,12 +27,10 @@ export class UserService {
   async register(userData: Partial<Auth>): Promise<void> {
     try {
       const auth = await this.authRepository.findOne({ where: { email: Equal(userData.email) } })
-      console.log(userData, {auth});
       if (auth) {
         throw new BadRequestException("Email already used by other user")
       }
       userData.password = await bcrypt.hash(userData.password, 10)
-      console.log(userData);
       const newAuth = await this.authRepository.save(userData)
       await this.userRepository.save(
         {
@@ -65,15 +63,12 @@ export class UserService {
     try {
       const {email, password} = authBody
       const auth = await this.authRepository.findOne({ where: {email: Equal(email)} })
-      console.log({auth, authBody});
-      console.log(await bcrypt.compare(password, auth.password), password, auth.password);
       if (!await bcrypt.compare(password, auth.password)) {
         throw new UnauthorizedException("invalid login or password")
       }
       const accessAndRefreshTokens = await this.accessAndRefreshTokens(auth.uuid, remember)
       return accessAndRefreshTokens
     } catch (error) {
-      console.log({error});
       handleError(error)
       throw new InternalServerErrorException("internal")
     }
@@ -81,19 +76,16 @@ export class UserService {
 
   async getUserById(uuid: string): Promise<User> {
     const auth = await this.authRepository.findOne({where: {uuid}})
-    console.log({ auth });
     if (!auth) {
       throw new NotFoundException("auth not found")
     }
     const user = await this.userRepository.findOne({where: {authId: Equal(auth.id)}})
-    console.log({user})
     return user
   }
 
   async createUser(jobSeekerDTO: {userRequest: Record<string, string>, uuid: string}): Promise<void> {
     try {
       const { uuid, userRequest } = jobSeekerDTO
-      console.log({uuid: uuid}, 343, userRequest)
       const auth = await this.authRepository.findOne({ where: {uuid} })
       await this.userRepository.insert({...userRequest, uuid, authId: auth.id} as Partial<User>)
     } catch (error) {

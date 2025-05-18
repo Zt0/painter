@@ -34,6 +34,8 @@ import { ConfirmUserResponseDto } from './interfaces/user/dto/confirm-user-respo
 import { Role } from './services/guards/authorization.guard';
 import { LocalAuthGuard } from './services/guards/permission.guard';
 import { RolesGuard } from './services/guards/role.guard';
+import { StructuredLogger } from './services/logger';
+import { Throttle } from '@nestjs/throttler';
 
 @Controller('users')
 @ApiTags('users')
@@ -42,7 +44,7 @@ export class UsersController {
     @Inject('USER_SERVICE') private readonly userServiceClient: ClientProxy,
   ) {}
 
-  @Get()
+  @Get(':id')
   @UseGuards(RolesGuard)
   public async getUserByToken(
     @Param('id') id: string,
@@ -95,8 +97,8 @@ export class UsersController {
     };
   }
 
+  @Throttle({ default: { limit: 3, ttl: (60 * 1000) } })
   @Post('/login')
-  // @UseGuards(LocalAuthGuard)
   @ApiCreatedResponse({
     type: LoginUserResponseDto,
   })
@@ -104,18 +106,25 @@ export class UsersController {
     @Body() loginRequest: LoginUserDto,
   ): Promise<unknown> {
     console.log(3)
-    const getUserResponse: unknown & {user: {accessToken: string, refreshToken: string}} = await firstValueFrom(
-      this.userServiceClient.send('login', loginRequest),
-    );
-    console.log(4)
-    return {
-      message: 'createTokenResponse.message',
-      data: {
-        accessToken: getUserResponse.user.accessToken,
-        refreshToken: getUserResponse.user.refreshToken,
-      },
-      errors: null,
-    };
+    try  {
+      const getUserResponse: unknown & {user: {accessToken: string, refreshToken: string}} = await firstValueFrom(
+        this.userServiceClient.send('login', loginRequest),
+      );
+      console.log(4)
+      return {
+        message: 'createTokenResponse.message',
+        data: {
+          accessToken: getUserResponse.user.accessToken,
+          refreshToken: getUserResponse.user.refreshToken,
+        },
+        errors: null,
+      };
+    } catch (e) {
+      e.message = 'Invalid credentials';
+      StructuredLogger.error('exception', 'internal exception', {message: e?.message, email: loginRequest.email})
+      throw e
+    }
+    
   }
 
   @Post('user')

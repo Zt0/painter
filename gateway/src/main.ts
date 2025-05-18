@@ -3,8 +3,7 @@ import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import { ConfigService } from './services/config/config.service';
 import { HttpExceptionFilter } from './filters/exception.filter';
-import { quickstart } from './services/logger2';
-
+import * as compression from 'compression';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -17,8 +16,8 @@ async function bootstrap() {
     .build();
   const document = SwaggerModule.createDocument(app, options);
   SwaggerModule.setup('api', app, document);
-  await quickstart()
   app.enableCors({origin: '*'})
+  app.use(compression());
   await app.listen(new ConfigService().get('api_gateway_port'));
 }
 bootstrap();

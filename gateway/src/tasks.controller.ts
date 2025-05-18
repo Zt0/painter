@@ -50,7 +50,6 @@ export class TasksController {
   public async getPosts(
     @Req() {uuid}: Request & {uuid: string},
   ): Promise<unknown> {
-    console.log(34343)
     StructuredLogger.info('getPostsFeed', 'tasksController', {message: 'stardfdasfasft'})
     const posts: unknown[] = await firstValueFrom(
       this.taskServiceClient.send(
@@ -74,9 +73,7 @@ export class TasksController {
   public async getPostsFeed(
     @Req() {uuid}: Request & {uuid: string},
   ): Promise<unknown> {
-    console.log(4353252345);
     StructuredLogger.info('getPostsFeed', 'tasksController', {message: 'stardfdasfasft'})
-    console.log(4353252346);
     const posts: unknown[] = await firstValueFrom(
       this.taskServiceClient.send(
         'posts_feed_get',
@@ -152,7 +149,6 @@ export class TasksController {
       });
 
       try {
-        // Upload the file to GCP
         blobStream.end(file.buffer);
         imageUrl = `https://storage.googleapis.com/${bucketName}/${uniqueFileName}`;
       } catch (error) {
@@ -161,20 +157,14 @@ export class TasksController {
       }
     }
 
-    // Pass the image URL to the service
-    console.log(111, {
-      authUUID: uuid,
-      ...taskRequest,
-      image: imageUrl, // Include the uploaded image URL
-    });
     const createTaskResponse: IServiceTaskCreateResponse = await firstValueFrom(
       this.taskServiceClient.send('post_create', {
         authUUID: uuid,
         ...taskRequest,
-        image: imageUrl, // Include the uploaded image URL
+        image: imageUrl,
       }),
     );
-    console.log(222);
+
     return {
       message: 'Task created successfully',
       data: {
@@ -206,14 +196,14 @@ export class TasksController {
   public async editTask(
     @Req() { uuid }: Request & { uuid: string },
     @Param('id') taskId: string,
-    @Body() taskRequest: EditTaskDto, // DTO with optional fields
-    @UploadedFile() file?: Express.Multer.File, // Optional file
+    @Body() taskRequest: EditTaskDto,
+    @UploadedFile() file?: Express.Multer.File,
   ): Promise<unknown> {
     const storage = new Storage({
       credentials: JSON.parse(config.get('POLLIN_FIREBASE_ADMINSDK_SA')),
     });
     const bucketName = 'black-resource-347917.appspot.com';
-    let imageUrl = taskRequest.imageUrl; // Existing image URL from task
+    let imageUrl = taskRequest.imageUrl;
 
     if (file) {
       const uniqueFileName = `painter-post-images/${uuidv4()}${extname(file.originalname)}`;
@@ -228,7 +218,6 @@ export class TasksController {
       });
 
       try {
-        // Upload the file to GCP
         blobStream.end(file.buffer);
         imageUrl = `https://storage.googleapis.com/${bucketName}/${uniqueFileName}`;
       } catch (error) {
@@ -237,15 +226,13 @@ export class TasksController {
       }
     }
 
-    // Merge provided fields with existing task data
     const updateTaskPayload = {
       authUUID: uuid,
       id: taskId,
       ...(taskRequest.title && { title: taskRequest.title }),
       ...(taskRequest.description && { description: taskRequest.description }),
-      image: imageUrl, // New or existing image URL
+      image: imageUrl,
     };
-    console.log({updateTaskPayload});
     const editTaskResponse: unknown = await firstValueFrom(
       this.taskServiceClient.send('post_update', updateTaskPayload),
     );
@@ -274,7 +261,7 @@ export class TasksController {
         { id, authUUID: uuid },
       ),
     );
-    console.log({getPostResponse});
+
     return {
       message: 'getPost.message',
       data: {

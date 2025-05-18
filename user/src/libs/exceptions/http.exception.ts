@@ -1,5 +1,4 @@
 import {HttpException} from '@nestjs/common'
-// import {ResponseStatusCodes} from '@libs/common/dto/response-status.dto'
 
 export class DefaultHttpException extends HttpException {
   constructor(data: {

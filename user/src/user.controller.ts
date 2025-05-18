@@ -28,9 +28,7 @@ export class UserController {
 
   @MessagePattern('user_get_by_id')
   public async getUserById({ uuid }: { uuid: string }): Promise<User> {
-    console.log(4,{uuid})
     const result = await this.userService.getUserById(uuid)
-    console.log({result});
     return result;
   }
 
@@ -45,26 +43,18 @@ export class UserController {
 
   @MessagePattern('register')
   public async register(userParams: Partial<User>): Promise<IUserCreateResponse> {
-    console.log(3335, userParams)
-
-    let result: IUserCreateResponse;
     await this.userService.register(userParams)
     return {status: 200, message: "done", user: null, errors: null};
   }
 
   @MessagePattern('login')
   public async login(userParams: Partial<Auth>): Promise<unknown> {
-    console.log(3335, userParams)
-
-    let result: IUserCreateResponse;
     const tokens = await this.userService.login(userParams, true)
-    console.log({tokens})
     return {status: 200, message: "done", user: tokens, errors: null};
   }
 
   @MessagePattern('create_user')
   public async createUser(userParams: unknown): Promise<unknown> {
-    console.log(3336, userParams)
     await this.userService.createUser(userParams as {userRequest: Record<string, string>, uuid: string})
     return {status: 200, message: "done", user: null, errors: null};
   }
