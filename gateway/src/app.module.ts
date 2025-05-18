@@ -10,7 +10,6 @@ import { DefaultDatabaseConfiguration } from './orm.module';
 import { JwtModule } from '@nestjs/jwt';
 import * as dotenv from 'dotenv'
 import { AuthRepository } from './repositories/auth.repository';
-import { MetricsService } from './services/metrics.service';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
 
@@ -31,7 +30,6 @@ dotenv.config()
   providers: [
     AuthRepository,
     ConfigService,
-    MetricsService,
     {
         provide: APP_GUARD,
         useClass: ThrottlerGuard

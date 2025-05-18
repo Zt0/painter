@@ -34,13 +34,14 @@ import { extname } from 'path';
 import { v4 as uuidv4 } from 'uuid';
 import { ConfigService } from './services/config/config.service';
 import { StructuredLogger } from './services/logger';
-import { MetricsService } from './services/metrics.service';
+import { File as MulterFile } from 'multer';
+
 const config = new ConfigService()
+
 @Controller('tasks')
 @ApiTags('tasks')
 export class TasksController {
   constructor(
-    private readonly metricsService: MetricsService,
     @Inject('TASK_SERVICE') private readonly taskServiceClient: ClientProxy,
   ) {}
 
@@ -50,7 +51,7 @@ export class TasksController {
   public async getPosts(
     @Req() {uuid}: Request & {uuid: string},
   ): Promise<unknown> {
-    StructuredLogger.info('getPostsFeed', 'tasksController', {message: 'stardfdasfasft'})
+    StructuredLogger.info('getPostsFeed', 'tasksController', {message: 'getting posts'})
     const posts: unknown[] = await firstValueFrom(
       this.taskServiceClient.send(
         'posts_get',
@@ -73,7 +74,7 @@ export class TasksController {
   public async getPostsFeed(
     @Req() {uuid}: Request & {uuid: string},
   ): Promise<unknown> {
-    StructuredLogger.info('getPostsFeed', 'tasksController', {message: 'stardfdasfasft'})
+    StructuredLogger.info('getPostsFeed', 'tasksController', {message: 'getting posts feed'})
     const posts: unknown[] = await firstValueFrom(
       this.taskServiceClient.send(
         'posts_feed_get',
@@ -128,7 +129,7 @@ export class TasksController {
   public async createTask(
     @Req() { uuid }: Request & { uuid: string },
     @Body() taskRequest: CreatePostDto,
-    @UploadedFile() file: Express.Multer.File,
+    @UploadedFile() file: MulterFile,
   ): Promise<unknown> {
     const storage = new Storage({
       credentials: JSON.parse(config.get('POLLIN_FIREBASE_ADMINSDK_SA'))
@@ -197,7 +198,7 @@ export class TasksController {
     @Req() { uuid }: Request & { uuid: string },
     @Param('id') taskId: string,
     @Body() taskRequest: EditTaskDto,
-    @UploadedFile() file?: Express.Multer.File,
+    @UploadedFile() file?: MulterFile,
   ): Promise<unknown> {
     const storage = new Storage({
       credentials: JSON.parse(config.get('POLLIN_FIREBASE_ADMINSDK_SA')),

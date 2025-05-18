@@ -1,6 +1,5 @@
 import * as bunyan from 'bunyan'
 import { LoggingBunyan } from '@google-cloud/logging-bunyan';
-import { ConfigService } from './config/config.service';
 
 export enum LogType {
   SystemLog = 'SystemLog',

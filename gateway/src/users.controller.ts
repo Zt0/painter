@@ -50,11 +50,9 @@ export class UsersController {
     @Param('id') id: string,
     @Req() {uuid}: Request & {uuid: string},
   ): Promise<unknown> {
-    console.log(uuid, 33)
     const userResponse: IServiceUserGetByIdResponse = await firstValueFrom(
       this.userServiceClient.send('user_get_by_id', { uuid }),
     );
-    console.log({ userResponse });
     return {
       message: 'userResponse.message',
       data: {
@@ -71,11 +69,9 @@ export class UsersController {
   public async register(
     @Body() userRequest: CreateUserDto,
   ): Promise<CreateUserResponseDto> {
-    console.log('post user')
     const createUserResponse: IServiceUserCreateResponse = await firstValueFrom(
       this.userServiceClient.send('register', userRequest),
     );
-    console.log(353, createUserResponse)
     if (createUserResponse.status !== 200) {
       throw new HttpException(
         {
@@ -105,12 +101,10 @@ export class UsersController {
   public async loginUser(
     @Body() loginRequest: LoginUserDto,
   ): Promise<unknown> {
-    console.log(3)
     try  {
       const getUserResponse: unknown & {user: {accessToken: string, refreshToken: string}} = await firstValueFrom(
         this.userServiceClient.send('login', loginRequest),
       );
-      console.log(4)
       return {
         message: 'createTokenResponse.message',
         data: {
@@ -137,11 +131,9 @@ export class UsersController {
     @Req() {uuid}: Request & {uuid: string},
     @Body() userRequest: CreateUserDto,
   ): Promise<unknown> {
-    console.log('create user', userRequest, uuid)
     const createUserResponse: IServiceUserCreateResponse = await firstValueFrom(
       this.userServiceClient.send('create_user', { userRequest, uuid }),
     );
-    console.log(353)
 
     return {
       message: 'createUserResponse.message',

@@ -61,14 +61,16 @@ export class UserService {
 
   async login(authBody: Partial<Auth>, remember: boolean): Promise<unknown> {
     try {
+      console.log({authBody})
       const {email, password} = authBody
       const auth = await this.authRepository.findOne({ where: {email: Equal(email)} })
-      if (!await bcrypt.compare(password, auth.password)) {
+      if (!await bcrypt.compare(password, auth?.password)) {
         throw new UnauthorizedException("invalid login or password")
       }
-      const accessAndRefreshTokens = await this.accessAndRefreshTokens(auth.uuid, remember)
+      const accessAndRefreshTokens = await this.accessAndRefreshTokens(auth?.uuid, remember)
       return accessAndRefreshTokens
     } catch (error) {
+      console.log(error)
       handleError(error)
       throw new InternalServerErrorException("internal")
     }
