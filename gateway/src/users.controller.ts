@@ -93,7 +93,7 @@ export class UsersController {
     };
   }
 
-  @Throttle({ default: { limit: 3, ttl: (60 * 1000) } })
+  @Throttle({ default: { limit: 3, ttl: 60000 } })
   @Post('/login')
   @ApiCreatedResponse({
     type: LoginUserResponseDto,
@@ -114,8 +114,13 @@ export class UsersController {
         errors: null,
       };
     } catch (e) {
-      e.message = 'Invalid credentials';
-      StructuredLogger.error('exception', 'internal exception', {message: e?.message, email: loginRequest.email})
+      if (e?.response?.status === 429) {
+              StructuredLogger.error('exception', 'too many requests', {message: e?.message, email: loginRequest.email})
+      } else {
+        e.message = 'Invalid credentials';
+        StructuredLogger.error('exception', 'internal exception', {message: e?.message, email: loginRequest.email})
+      }
+
       throw e
     }
     

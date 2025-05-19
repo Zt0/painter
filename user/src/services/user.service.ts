@@ -64,6 +64,9 @@ export class UserService {
       console.log({authBody})
       const {email, password} = authBody
       const auth = await this.authRepository.findOne({ where: {email: Equal(email)} })
+      if (!auth) {
+        throw new NotFoundException("auth not found")
+      }
       if (!await bcrypt.compare(password, auth?.password)) {
         throw new UnauthorizedException("invalid login or password")
       }

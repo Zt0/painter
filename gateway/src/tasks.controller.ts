@@ -34,7 +34,7 @@ import { extname } from 'path';
 import { v4 as uuidv4 } from 'uuid';
 import { ConfigService } from './services/config/config.service';
 import { StructuredLogger } from './services/logger';
-import { File as MulterFile } from 'multer';
+// import { File as MulterFile } from 'multer';
 
 const config = new ConfigService()
 
@@ -129,7 +129,7 @@ export class TasksController {
   public async createTask(
     @Req() { uuid }: Request & { uuid: string },
     @Body() taskRequest: CreatePostDto,
-    @UploadedFile() file: MulterFile,
+    @UploadedFile() file: Express.Multer.File,
   ): Promise<unknown> {
     const storage = new Storage({
       credentials: JSON.parse(config.get('POLLIN_FIREBASE_ADMINSDK_SA'))
@@ -198,7 +198,7 @@ export class TasksController {
     @Req() { uuid }: Request & { uuid: string },
     @Param('id') taskId: string,
     @Body() taskRequest: EditTaskDto,
-    @UploadedFile() file?: MulterFile,
+    @UploadedFile() file?: Express.Multer.File,
   ): Promise<unknown> {
     const storage = new Storage({
       credentials: JSON.parse(config.get('POLLIN_FIREBASE_ADMINSDK_SA')),
